@@ -1,6 +1,7 @@
 # amplify generated files
 .amplify
 amplifyconfiguration*
+amplify_outputs.json
 
 # node modules
 node_modules
