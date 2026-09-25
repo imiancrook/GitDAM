@@ -13,6 +13,7 @@ Software teams have had version control for decades. They can try an idea on a b
 | **Video / motion editor** | 40 GB project folders, no history, no safe rollback | Large-file storage that scales, snapshot before every risky edit |
 | **Art director / creative lead** | Reviews happen in email and screenshots; approvals are untracked | Review requests with annotations, explicit approve/merge, audit trail |
 | **Marketing ops** | "Send me the current assets" turns into a scavenger hunt | Releases: a tagged, immutable bundle of what shipped |
+| **Client / stakeholder** | Feedback lives in email, screenshots and calls; nothing is tracked to done | Files a request or leaves feedback on the asset itself; sees it move to done |
 | **Technical artist / developer** | Wants assets in the same pipeline as code | Real Git LFS and Git protocol compatibility on the same repository |
 
 The first three are the users. The fourth and fifth are the buyers.
@@ -35,6 +36,9 @@ The product principle: **every Git concept is present, none of the Git vocabular
 | Revert / checkout old version | **Restore** | Undo a bad change in one click, non-destructively |
 | Tag | **Release** / **Deliverable** | "This is exactly what shipped to the client on the 14th" |
 | Pull request | **Review request** | Structured approval with annotations, instead of email |
+| Issue | **Request** / **Feedback** / **Task** | Work and feedback tracked on the project, next to the assets, instead of in email |
+| Labels, milestones, project board | **Tags**, **Deliverables**, **Board** | Organize requests by type, group them toward a release, see status at a glance |
+| "Fixes #42" in a commit | Snapshot linked to a request | Every change explains *why*; every request shows *what* resolved it |
 | LFS lock | **Check out for editing** | Prevent two people from editing an un-mergeable file at once |
 | `.gitignore` / `.gitattributes` | Project settings | Which file types are previewed, locked-by-default, etc. |
 | Clone / pull / push | **Sync** (desktop app) or **Open in Photoshop** | Files live where the tools expect them: on disk |
@@ -101,7 +105,25 @@ ReviewRequest (pull request)
 
 Release (a tag with metadata)
   projectId, refName, commitId, title, notes, publishedAt, bundleKey (zip in S3)
+
+Issue (a request, piece of feedback, or task)
+  projectId, number (per-project sequence), title, body,
+  kind: request|feedback|task|bug, state: open|in_progress|in_review|done|closed,
+  authorId, assigneeIds[], labels[], milestoneId, priority,
+  attachments: [{ path, commitId, region }],   # "this asset, this version, this spot"
+  createdAt, updatedAt, closedAt
+
+Milestone (a deliverable in planning)
+  projectId, title, dueDate, releaseId (set when shipped), state: open|closed
+
+IssueLink                    # what resolved or references what
+  issueId, target: { commitId | reviewId | issueId }, relation: resolves|references|blocks|duplicates
+
+# Comment (above) also targets issueId; the same comment component serves
+# issues, review requests, and pinned annotations on assets.
 ```
+
+The issue number is a per-project sequence (`#42`), allocated with an atomic counter, because humans say "number forty-two", not a UUID.
 
 ### How the core operations work
 
@@ -112,6 +134,8 @@ Release (a tag with metadata)
 - **Review & merge.** Open a review request from an exploration to main. Compute the 3-way diff (merge base via lowest common ancestor on `parentIds`). Paths changed on only one side merge automatically; paths changed on both are conflicts and the UI asks the reviewer to choose. Approval writes a merge commit with two parents and moves `main`.
 - **Lock / check out.** `Lock` records with a TTL; the UI shows who holds each file; the desktop client sets files read-only when locked by someone else. Same semantics as the Git LFS lock API, so `git lfs lock` works against it too.
 - **Release.** Tag ref + a background job that zips the tree into `releases/{projectId}/{tag}.zip` for one-click download by people who will never log in.
+- **Issues.** Anyone with access (including a client with a guest role) files a request; it can be created *from* an asset, which pins it to that path, version and region. Snapshot messages and review descriptions that mention `#42` create an `IssueLink` (`references`); `fixes #42` / `resolves #42` moves the issue to `in_review` when the snapshot is on an exploration, and to `done` when it lands on main. Closing a milestone can create the release for it, and the release notes are generated from the issues in the milestone.
+- **Board.** A kanban view over `Issue.state` (and, optionally, over milestones or assignees). Creative directors run standups from it; it doubles as the client-facing status page.
 
 ## Product surface
 
@@ -120,7 +144,10 @@ Release (a tag with metadata)
 - History panel per asset and per project, with restore.
 - Visual compare.
 - Review requests with pinned annotations (region on an image, timecode on video, page on a PDF).
+- Issues: list, board, milestones, labels, assignees; "new request" from any asset; issue timeline showing linked snapshots and reviews; release notes from closed issues.
 - Locks, releases, project settings, team roles.
+
+Issues are also the **intake surface for people outside the team**. A client or stakeholder with a guest role sees the board and the assets they're allowed to see, files feedback on the asset itself, and watches it move to done, without ever needing to understand snapshots or explorations. Feedback that used to be a screenshot in an email becomes a tracked item pinned to the exact pixel, on the exact version.
 
 ### 2. Desktop sync client (new, highest-leverage addition)
 Creatives work in Photoshop, Illustrator, Premiere, Blender, Figma-exported files, on local disk. A tray app that:
@@ -171,10 +198,11 @@ The prototype has good bones but isn't runnable end to end.
 - Comments with regions and timecodes.
 
 ### Phase 3: Collaboration (1–2 months)
-- Review requests, approvals, 3-way merge with pick-one conflict resolution.
-- Releases with zip bundles and public share links (signed, expiring).
-- Teams, roles, activity feed.
-- Notifications (email, Slack).
+- Issues: create from an asset with a pinned region, list and board views, labels, assignees, milestones. `#42` references and `fixes #42` in snapshot messages create links and drive state.
+- Review requests, approvals, 3-way merge with pick-one conflict resolution. A review request can be opened from an issue, and merging it closes the linked issues.
+- Releases with zip bundles and public share links (signed, expiring); closing a milestone produces the release and drafts its notes from the issues.
+- Teams, roles (including a guest role for clients), activity feed.
+- Notifications (email, Slack) for assignments, mentions, state changes and review requests.
 
 ### Phase 4: Living on the desktop (2–3 months)
 - Desktop sync client (Tauri or Electron; Rust core is worth it for hashing and file watching at scale).
@@ -193,10 +221,12 @@ The prototype has good bones but isn't runnable end to end.
 - **A general-purpose file sync product.** Dropbox exists. GitDAM's value is history, branching, review and releases; sync is a means to that.
 - **Merge tools for binary formats.** Layer-level PSD merging is a research problem. Pick-one conflicts plus locking cover the real workflow.
 - **A Git hosting service.** Git compatibility is a bridge for pipelines and technical users, not the product. If someone wants GitHub, they should use GitHub.
+- **A general project-management tool.** Issues exist because they're attached to assets, versions and releases; that attachment is the whole point. No Gantt charts, time tracking, or sprints. Teams that run their studio in Asana or Jira keep doing so; GitDAM issues are the asset-level layer beneath it.
 
 ## Open questions
 
 1. **Tenancy model.** Per-user projects (current) vs. organizations with teams. Organizations are the right answer for the buyer personas; decide before Phase 1 because it shapes every authorization rule.
 2. **Snapshot granularity.** Should the desktop client auto-snapshot on every save (Google Docs style, with the user naming milestones), or only on explicit action (Git style)? Leaning toward auto-snapshot with explicit "milestones" surfaced in history; auto-snapshots can be squashed after 30 days.
 3. **Storage economics.** Content-addressing deduplicates identical files, but creative workflows produce many *near*-identical large files. Versioned storage will be the dominant cost. Lifecycle to Glacier for blobs not referenced by any branch head or release after N days is the likely answer; the commit graph makes "is this reachable?" a cheap query.
-4. **Where previews are rendered for proprietary formats.** Server-side PSD flattening is lossy for some features. The Adobe plugin could push a rendered preview at snapshot time instead. Probably both.
+4. **Issues vs. the studio's existing tracker.** Most agencies and studios already run Jira, Asana, Linear or Monday. Options: (a) GitDAM issues are standalone and teams double-enter; (b) two-way sync with the external tracker, GitDAM owning the asset attachment and the external tool owning scheduling; (c) GitDAM issues only, positioned as "the client feedback and asset-level task layer", with a one-way "create in Jira" action. Leaning toward (c) first, (b) once there's demand from a specific customer, because two-way sync is a support burden.
+5. **Where previews are rendered for proprietary formats.** Server-side PSD flattening is lossy for some features. The Adobe plugin could push a rendered preview at snapshot time instead. Probably both.
