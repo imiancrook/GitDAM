@@ -1,5 +1,7 @@
 # GitDAM Vision: Git-Style Asset Management for Creative Teams
 
+This document is the *what and why*. [WORKFLOWS.md](./WORKFLOWS.md) walks through the product from the user's seat, and [DESIGN.md](./DESIGN.md) is the technical design, including the concrete Phase 0 and Phase 1 plans.
+
 ## The idea in one paragraph
 
 Software teams have had version control for decades. They can try an idea on a branch, throw it away without consequence, see exactly who changed what and when, roll back a bad change in seconds, review each other's work before it lands, and ship from a tagged, reproducible state. Creative teams get none of this. They get `logo_final_v3_FINAL_revised.psd`, Dropbox conflicts, "which one is the approved one?", and a Slack thread as the only record of why a change was made. GitDAM gives designers, illustrators, video editors, photographers and motion artists the benefits of Git without asking them to learn Git. It looks like a DAM. It behaves like a repository.
@@ -225,7 +227,7 @@ The prototype has good bones but isn't runnable end to end.
 
 ## Open questions
 
-1. **Tenancy model.** Per-user projects (current) vs. organizations with teams. Organizations are the right answer for the buyer personas; decide before Phase 1 because it shapes every authorization rule.
+1. **Tenancy model.** *Resolved in DESIGN.md §1:* organizations are the tenant from day one, with org roles (admin, member) and per-project roles (owner, editor, reviewer, guest). Personal use is a one-member org.
 2. **Snapshot granularity.** Should the desktop client auto-snapshot on every save (Google Docs style, with the user naming milestones), or only on explicit action (Git style)? Leaning toward auto-snapshot with explicit "milestones" surfaced in history; auto-snapshots can be squashed after 30 days.
 3. **Storage economics.** Content-addressing deduplicates identical files, but creative workflows produce many *near*-identical large files. Versioned storage will be the dominant cost. Lifecycle to Glacier for blobs not referenced by any branch head or release after N days is the likely answer; the commit graph makes "is this reachable?" a cheap query.
 4. **Issues vs. the studio's existing tracker.** Most agencies and studios already run Jira, Asana, Linear or Monday. Options: (a) GitDAM issues are standalone and teams double-enter; (b) two-way sync with the external tracker, GitDAM owning the asset attachment and the external tool owning scheduling; (c) GitDAM issues only, positioned as "the client feedback and asset-level task layer", with a one-way "create in Jira" action. Leaning toward (c) first, (b) once there's demand from a specific customer, because two-way sync is a support burden.
