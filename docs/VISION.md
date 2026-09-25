@@ -1,6 +1,6 @@
 # GitDAM Vision: Git-Style Asset Management for Creative Teams
 
-This document is the *what and why*. [WORKFLOWS.md](./WORKFLOWS.md) walks through the product from the user's seat, and [DESIGN.md](./DESIGN.md) is the technical design, including the concrete Phase 0 and Phase 1 plans.
+This document is the *what and why*. [WORKFLOWS.md](./WORKFLOWS.md) walks through the product from the user's seat, [DESIGN.md](./DESIGN.md) is the technical design, including the concrete Phase 0 and Phase 1 plans, and [RESEARCH.md](./RESEARCH.md) tests the claims here against what DAM users, designers, editors and studios actually complain about. The roadmap and pricing principles below were revised after that research.
 
 ## The idea in one paragraph
 
@@ -190,33 +190,48 @@ The prototype has good bones but isn't runnable end to end.
 - Add `Ref`, `Commit`, `Tree`, `Blob`, `Lock` models; migrate `Repository → Project`, `LFSObject → Blob`.
 - `createCommit`, `createRef`, `getTree`, `diffCommits` as AppSync custom mutations/queries backed by Lambda (these need transactional ref updates, which the auto-generated CRUD can't do).
 - Every upload becomes a commit. History and restore in the UI.
+- **Locks in the UI, first.** Research says "last save wins" is the loss people fear most and every lock implementation they've used is buggy; check-out is the headline collaboration feature, explorations are second.
 - Branch creation and switching in the UI ("Start an exploration").
-- Locks in the UI.
+- Surface exact-duplicate detection: an upload that hashes to an existing blob says so and shows where it already lives (free with content addressing; a named gap in Bynder and Canto).
+- Download folder as zip.
 
-### Phase 2: Seeing the work (1–2 months)
+### Phase 2: Seeing the work, and living on the desktop (2–3 months)
+Moved forward from Phase 4. The research is unambiguous that a DAM outside the tools people work in gets bypassed, and that the incumbent sync tools are failing on reliability. The web upload flow in Phase 1 validates the model; the desktop client is how it gets adopted.
+- Desktop sync client (Rust core, Tauri UI): watched folder, drafts, background blob upload, one-click snapshot, auto-snapshot with milestones, stable local paths, auto-lock for check-out-required types.
 - Preview pipeline (S3 event → Lambda → previews keyed by oid).
 - Grid view with real thumbnails; hover-scrub for video.
 - Visual compare for images and video.
 - Comments with regions and timecodes.
+- Multipart, resumable upload for large files.
 
 ### Phase 3: Collaboration (1–2 months)
 - Issues: create from an asset with a pinned region, list and board views, labels, assignees, milestones. `#42` references and `fixes #42` in snapshot messages create links and drive state.
 - Review requests, approvals, 3-way merge with pick-one conflict resolution. A review request can be opened from an issue, and merging it closes the linked issues.
-- Releases with zip bundles and public share links (signed, expiring); closing a milestone produces the release and drafts its notes from the issues.
+- Releases with zip bundles and public share links (signed, expiring); closing a milestone produces the release and drafts its notes from the issues. Each release gets an **approval record** export (PDF: what was approved, by whom, when, with thumbnails and the review thread), because "implied approval" is the top source of agency disputes.
 - Teams, roles (including a guest role for clients), activity feed.
 - Notifications (email, Slack) for assignments, mentions, state changes and review requests.
+- OpenSearch-backed search (moved forward from Phase 5; search that degrades past ~100k assets is a named DAM failure mode).
 
-### Phase 4: Living on the desktop (2–3 months)
-- Desktop sync client (Tauri or Electron; Rust core is worth it for hashing and file watching at scale).
-- Sparse sync, auto-lock on open, drafts → snapshot flow.
-- Multipart upload for files over 5 GB; S3 Transfer Acceleration.
+### Phase 4: Inside the tools (2–3 months)
+- Adobe UXP panel (Photoshop, Illustrator, Premiere, After Effects): snapshot, history, check-out, compare, and an authoritative preview pushed at snapshot time.
+- Cloud-file placeholders in the desktop client (macOS File Provider, Windows Cloud Files API) for large-footage projects.
+- S3 Transfer Acceleration.
 
 ### Phase 5: Compatibility and scale
 - Git LFS Batch + Locking API with proper auth (Phase 0 exposes it; this hardens it against the spec's conformance tests).
-- Git smart-HTTP bridge.
-- Adobe UXP panel.
+- Git smart-HTTP bridge. Also the export guarantee: `git clone` gets you everything, which no DAM offers.
 - CloudFront in front of previews and release bundles.
-- OpenSearch for full-text and metadata search; AI-generated tags and descriptions as a search aid.
+- AI-generated tags and descriptions as a search aid.
+
+## Pricing principles
+
+Added after research: per-seat pricing, guest fees, per-feature add-ons, unforecastable usage credits and surprise bills are the most repeated complaints across DAMs, review tools and version-control products, and Unity moved Unity VCS to free seats plus per-GB in 2026. GitDAM's pricing should be the inverse of the complaints:
+
+- **Storage-based, not seat-based.** A flat fee per organization that scales with stored GB. Adding a contractor for three months costs nothing.
+- **Guests, reviewers and clients are free and unlimited.** The people who receive releases and leave feedback never count.
+- **Bandwidth included.** A generous egress allowance per stored GB; overage priced at cost and visible in the app before it happens, never a surprise on the invoice.
+- **No feature paywalls.** Explorations, reviews, releases, Git access and the desktop client are in every plan. Tiers differ by storage, retention and support.
+- **Published, and stable.** Prices on the website; changes announced a year ahead with grandfathering.
 
 ## What we are explicitly not building
 
@@ -224,11 +239,12 @@ The prototype has good bones but isn't runnable end to end.
 - **Merge tools for binary formats.** Layer-level PSD merging is a research problem. Pick-one conflicts plus locking cover the real workflow.
 - **A Git hosting service.** Git compatibility is a bridge for pipelines and technical users, not the product. If someone wants GitHub, they should use GitHub.
 - **A general project-management tool.** Issues exist because they're attached to assets, versions and releases; that attachment is the whole point. No Gantt charts, time tracking, or sprints. Teams that run their studio in Asana or Jira keep doing so; GitDAM issues are the asset-level layer beneath it.
+- **A feature that only works for one vendor's format.** Abstract, Kactus, Plant, Pixelapse and LayerVault were Sketch-only versioning layers, and all of them died when Sketch and Figma made versioning native. The same could happen with Adobe or Blackmagic. GitDAM's defence is being cross-tool and cross-format (PSD, PRPROJ, BLEND, PDF, exports, all in one project), owning the client-facing review and issue layer those vendors don't want, and guaranteeing exit via Git-compatible export. When a format-agnostic version of a feature is possible, build that one.
 
 ## Open questions
 
 1. **Tenancy model.** *Resolved in DESIGN.md §1:* organizations are the tenant from day one, with org roles (admin, member) and per-project roles (owner, editor, reviewer, guest). Personal use is a one-member org.
-2. **Snapshot granularity.** Should the desktop client auto-snapshot on every save (Google Docs style, with the user naming milestones), or only on explicit action (Git style)? Leaning toward auto-snapshot with explicit "milestones" surfaced in history; auto-snapshots can be squashed after 30 days.
+2. **Snapshot granularity.** *Resolved toward auto-snapshot with milestones.* The desktop client snapshots automatically after a quiet period; explicit snapshots become milestones and are what history shows by default; auto-snapshots squash after 30 days (DESIGN.md §11). The research tipped it: editors already pay for a script that only bumps version numbers, Adobe deletes unmarked cloud versions after 30 days, and corrupted-autosave threads show that recovery needs the version *before* the last save to still exist.
 3. **Storage economics.** Content-addressing deduplicates identical files, but creative workflows produce many *near*-identical large files. Versioned storage will be the dominant cost. Lifecycle to Glacier for blobs not referenced by any branch head or release after N days is the likely answer; the commit graph makes "is this reachable?" a cheap query.
 4. **Issues vs. the studio's existing tracker.** Most agencies and studios already run Jira, Asana, Linear or Monday. Options: (a) GitDAM issues are standalone and teams double-enter; (b) two-way sync with the external tracker, GitDAM owning the asset attachment and the external tool owning scheduling; (c) GitDAM issues only, positioned as "the client feedback and asset-level task layer", with a one-way "create in Jira" action. Leaning toward (c) first, (b) once there's demand from a specific customer, because two-way sync is a support burden.
 5. **Where previews are rendered for proprietary formats.** Server-side PSD flattening is lossy for some features. The Adobe plugin could push a rendered preview at snapshot time instead. Probably both.

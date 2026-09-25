@@ -474,6 +474,7 @@ The desktop client is the product for editors. It has to be boringly reliable wi
 - **Pull:** `onRefUpdated` subscription (with polling fallback every 60 s). On a new head, diff base → head, and for each changed path: clean on disk → replace; draft on disk → mark *conflicted* and notify; placeholder → update the placeholder's metadata only.
 - **Placeholders:** the "cloud files" model. macOS: File Provider extension (proper; Finder integration, on-demand download). Windows: Cloud Files API. Both are substantial work; **v1 ships without them** and offers *Choose folders* (full sync of selected subtrees) plus a *Download on demand* list in the app. Placeholders are the Phase 4 stretch goal.
 - **Exclusions:** `.DS_Store`, `Thumbs.db`, `*.tmp`, `~$*`, Adobe autosave directories, and a per-project ignore list [`.gitignore`] editable in project settings.
+- **Path stability, guaranteed.** The client never renames, moves or relocates files on disk on its own initiative, and a project's local root never changes once chosen. Premiere, Resolve and After Effects reference media by absolute path, and "relink" is the single most-cited Premiere grievance (RESEARCH.md §4); a sync client that shuffles paths would be worse than Dropbox. Restores and pulls write bytes into the existing path; "keep both" conflict resolution creates a new sibling file rather than renaming the user's. Placeholders, when they arrive, occupy the real path so a later download changes nothing the project file can see.
 
 ### Locks in the client
 
@@ -609,4 +610,6 @@ Goal: the commit graph exists and every upload is a snapshot. Order matters; eac
 8. **Locks:** `createLock`/`releaseLock` and the lock indicator in the browser.
 9. **Subscriptions:** `onRefUpdated`, `onLockChanged`; the browser live-updates.
 
-At the end of Phase 1 the web app alone delivers WORKFLOWS.md §2 (minus the desktop app), §3 and §7. That is the point at which a friendly design team can start using it for real, which is when the desktop client (Phase 4) should be pulled forward if their feedback says so.
+10. **Duplicate detection and folder zip download:** `batchObjects(upload)` already knows when an oid exists; return the paths that reference it (from `AssetIndex`) so the UI can say "already in this project at `exports/hero.png`". Folder download is a Lambda that streams a zip of a tree.
+
+At the end of Phase 1 the web app alone delivers WORKFLOWS.md §2 (minus the desktop app), §3 and §7. That is the point at which a friendly design team can start using it for real. The desktop client follows immediately in Phase 2 (moved forward from Phase 4 after the research in RESEARCH.md §8): the web flow validates the model, the client is what gets adopted.
