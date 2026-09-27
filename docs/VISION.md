@@ -1,6 +1,6 @@
 # GitDAM Vision: Git-Style Asset Management for Creative Teams
 
-This document is the *what and why*. [WORKFLOWS.md](./WORKFLOWS.md) walks through the product from the user's seat, [DESIGN.md](./DESIGN.md) is the technical design, including the concrete Phase 0 and Phase 1 plans, [RESEARCH.md](./RESEARCH.md) tests the claims here against what DAM users, designers, editors and studios actually complain about, and [PERSONAS.md](./PERSONAS.md) describes the twelve kinds of people who interact with a DAM and which ones GitDAM serves first. The roadmap and pricing principles below were revised after that research.
+This document is the *what and why*. [WORKFLOWS.md](./WORKFLOWS.md) walks through the product from the user's seat, [DESIGN.md](./DESIGN.md) is the technical design, including the concrete Phase 0 and Phase 1 plans, [RESEARCH.md](./RESEARCH.md) tests the claims here against what DAM users, designers, editors and studios actually complain about, [PERSONAS.md](./PERSONAS.md) describes the twelve kinds of people who interact with a DAM and which ones GitDAM serves first, [STRESS_TEST.md](./STRESS_TEST.md) is an adversarial read of the whole plan, and [ASSUMPTIONS.md](./ASSUMPTIONS.md) turns its findings into tests with pass bars. The roadmap and pricing principles below were revised after that research.
 
 ## The idea in one paragraph
 
@@ -185,6 +185,14 @@ The prototype has good bones but isn't runnable end to end.
 - Tighten authorization: `a.allow.authenticated().to(['read'])` on every model means every signed-in user can read every project. Replace with per-project membership (owner / editor / viewer) via groups or a `ProjectMember` table.
 - Pin `aws-amplify` and `@aws-amplify/backend` to real versions instead of `latest` / `beta`, remove the `data-schema-types` webpack stub if the pinned versions no longer need it, and turn TypeScript and ESLint errors back on in `next.config.js`.
 - Add a test harness (Vitest) and cover the LFS pointer parse/create and OID calculation that already exist.
+
+### Phase 0.5: Validate (3 weeks, overlapping Phase 1)
+Added after [STRESS_TEST.md](./STRESS_TEST.md) rated the plan 5/10: the desktop-client bet and the pricing bet are in tension and neither was tested. [ASSUMPTIONS.md](./ASSUMPTIONS.md) has the tests and pass bars.
+- Ten interviews with P1 personas at 10–20 person agencies, with a price ladder and a "show me your folder" exercise (T1, T6–T8).
+- A cost model for the real workload: working-file size × saves per day × retention, with and without chunk-level dedup (T2). Pricing is not published until this exists.
+- Verify S3 full-object SHA-256 on multipart uploads (T3); prototype read-only locks against Photoshop and Premiere (T5); spike the Amplify authorize pipeline (T9).
+- A two-week concierge run with one friendly agency on the Phase 1 backend using a folder-watcher script, before any sync-client code (T4).
+- Decision taken pending these tests: **the first release targets Maya (designers)**; Priya's model stays intact but video-specific surface moves to the second release.
 
 ### Phase 1: The commit graph (1–2 months)
 - Add `Ref`, `Commit`, `Tree`, `Blob`, `Lock` models; migrate `Repository → Project`, `LFSObject → Blob`.
