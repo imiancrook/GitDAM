@@ -212,6 +212,19 @@ Release
   bundleKey?, bundleState: pending|ready|failed, publishedBy, publishedAt, milestoneId?
 ```
 
+### 2.8a Cross-org delivery and offboarding
+
+Two records added after the persona-driven workflow pass (WORKFLOWS §14).
+
+```
+DeliveryTarget   projectId, targetOrgId, targetProjectId, targetPath, acceptedBy, acceptedAt, active
+                 # created by the source project owner, accepted by a target project owner; either side can revoke
+```
+
+`publishRelease` on a project with an active `DeliveryTarget` also runs `createCommit` in the target project with `kind: import`, `authorName: "<source org> via release <title>"`, the release's files under `targetPath`, and `meta.deliveredFrom: { orgId, projectId, releaseId }`. Blobs are shared by content address, so nothing is copied; the target org's quota counts the bytes from then on. The approval record is stored as a small blob in the same commit. Guests of the source project are not propagated. The target's `AssetIndex` picks up rights metadata edits independently of the source.
+
+Offboarding is a single mutation, `removeMember(orgId | projectId, userId, reassignments)`, that in one Lambda: lists the user's locks, assigned issues and open reviews; applies the caller's reassignments (or releases/unassigns); revokes PATs; deletes membership rows; writes one `Activity` event with the summary. History is untouched: `Commit.authorId` and the captured `authorName`/`authorEmail` remain.
+
 ### 2.9 Activity
 
 ```
@@ -284,6 +297,14 @@ listIssues(projectId, filter: {state?, assignee?, label?, milestone?, kind?, cli
 getIssue(projectId, number)                           → { issue, events: [IssueEvent], comments: [Comment] }
 linkIssue(projectId, number, target, relation)        → IssueLink
 createMilestone / updateMilestone / closeMilestone(projectId, id, createRelease?: {…}) → Milestone
+```
+
+**Membership lifecycle, delivery, export**
+```
+removeMember(orgId | projectId, userId, reassignments: {locksTo?, issuesTo?, reviewsTo?})  → summary
+setDeliveryTarget(projectId, targetOrgId, targetProjectId, targetPath) / acceptDeliveryTarget / revokeDeliveryTarget
+getUsage(orgId)                                        → { perProject: [{storedBytes, ...}], egressThisMonth, includedEgress, projectedInvoice }
+exportOrg(orgId) / exportProject(projectId)            → job id; result is a signed URL to git bundle + zip + JSON
 ```
 
 **Comments, releases, activity, search**

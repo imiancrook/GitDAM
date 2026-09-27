@@ -209,6 +209,9 @@ Moved forward from Phase 4. The research is unambiguous that a DAM outside the t
 - Review requests, approvals, 3-way merge with pick-one conflict resolution. A review request can be opened from an issue, and merging it closes the linked issues.
 - Releases with zip bundles and public share links (signed, expiring); closing a milestone produces the release and drafts its notes from the issues. Each release gets an **approval record** export (PDF: what was approved, by whom, when, with thumbnails and the review thread), because "implied approval" is the top source of agency disputes.
 - Teams, roles (including a guest role for clients), activity feed.
+- **Member offboarding** (from WORKFLOWS 5.3): removing a member shows and reassigns their check-outs, issues and open reviews, revokes their tokens, keeps their history.
+- **Usage view** (WORKFLOWS 5.5): stored GB per project, egress against the included allowance, next invoice, overage shown before it happens.
+- **Cross-org release delivery** (WORKFLOWS 10.1): a project can deliver its releases into a project in another org as an import snapshot with the approval record attached. This is how agency work lands in a brand's library and how brands meet GitDAM before they buy it.
 - Notifications (email, Slack) for assignments, mentions, state changes and review requests.
 - OpenSearch-backed search (moved forward from Phase 5; search that degrades past ~100k assets is a named DAM failure mode).
 
@@ -222,6 +225,9 @@ Moved forward from Phase 4. The research is unambiguous that a DAM outside the t
 - Git smart-HTTP bridge. Also the export guarantee: `git clone` gets you everything, which no DAM offers.
 - CloudFront in front of previews and release bundles.
 - AI-generated tags and descriptions as a search aid.
+- **SSO (SAML/OIDC) and SCIM** (WORKFLOWS 8.1): the gate to any deal over ~50 seats; offboarding driven from the customer's IdP.
+- **Org export** (WORKFLOWS 8.3): per project, a Git bundle of the full history, a zip of the main line, and JSON of issues, comments, reviews, releases and metadata. The Git bundle is the anti-lock-in guarantee.
+- **Rights metadata** on the asset index (licence, expiry, territories, credit) with expiring rights raised as issues 30 days ahead (WORKFLOWS 10.2).
 
 ## Pricing principles
 
