@@ -1,6 +1,6 @@
 # GitDAM Vision: Git-Style Asset Management for Creative Teams
 
-This document is the *what and why*. [WORKFLOWS.md](./WORKFLOWS.md) walks through the product from the user's seat, [DESIGN.md](./DESIGN.md) is the technical design, including the concrete Phase 0 and Phase 1 plans, and [RESEARCH.md](./RESEARCH.md) tests the claims here against what DAM users, designers, editors and studios actually complain about. The roadmap and pricing principles below were revised after that research.
+This document is the *what and why*. [WORKFLOWS.md](./WORKFLOWS.md) walks through the product from the user's seat, [DESIGN.md](./DESIGN.md) is the technical design, including the concrete Phase 0 and Phase 1 plans, [RESEARCH.md](./RESEARCH.md) tests the claims here against what DAM users, designers, editors and studios actually complain about, and [PERSONAS.md](./PERSONAS.md) describes the twelve kinds of people who interact with a DAM and which ones GitDAM serves first. The roadmap and pricing principles below were revised after that research.
 
 ## The idea in one paragraph
 
