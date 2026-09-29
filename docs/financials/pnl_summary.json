@@ -1,0 +1,345 @@
+{
+  "generated": "2026-09-29",
+  "tiers": {
+    "Solo": {
+      "name": "Solo",
+      "monthly_usd": 19,
+      "storage_gb": 250,
+      "egress_gb": 750,
+      "retention_days": 30,
+      "persona": "Lena (illustrator / freelancer, one-person org, P2)",
+      "extras": "Unlimited guests, releases, approval records, desktop client, Git access"
+    },
+    "Studio": {
+      "name": "Studio",
+      "monthly_usd": 299,
+      "storage_gb": 2000,
+      "egress_gb": 6000,
+      "retention_days": 90,
+      "persona": "Rachel's 10-20 person agency (P1 buyer); Maya, Priya, Theo as users",
+      "extras": "Everything in Solo + 90-day history, protected folders, audit CSV, email support"
+    },
+    "Plus": {
+      "name": "Plus",
+      "monthly_usd": 899,
+      "storage_gb": 8000,
+      "egress_gb": 24000,
+      "retention_days": 365,
+      "persona": "30-60 person studios; Sam (technical artist), Marcus (IT/procurement) as gate",
+      "extras": "Everything in Studio + SSO/SCIM, 365-day history, priority support, higher Git/CI rate limits"
+    }
+  },
+  "overage": {
+    "storage_per_gb_mo": 0.1,
+    "egress_per_gb": 0.08
+  },
+  "cogs_placeholders": {
+    "Solo": 60,
+    "Studio": 90,
+    "Plus": 140
+  },
+  "cogs_crosscheck": [
+    {
+      "workload": "LIGHT",
+      "dedup": "whole-file",
+      "live_gb": 260,
+      "history_window_gb": 4032.0,
+      "history_kept_gb": 3696.0,
+      "total_stored_gb": 8147.76,
+      "egress_gb": 130.0,
+      "storage_cost_standard": 187.39848,
+      "storage_cost_tiered": 109.361136,
+      "egress_cost": 11.05,
+      "cogs_bottom_up_standard": 206.44848000000002,
+      "cogs_bottom_up_tiered": 128.411136
+    },
+    {
+      "workload": "LIGHT",
+      "dedup": "chunk",
+      "live_gb": 260,
+      "history_window_gb": 1612.8000000000002,
+      "history_kept_gb": 1478.4,
+      "total_stored_gb": 3418.224,
+      "egress_gb": 130.0,
+      "storage_cost_standard": 78.619152,
+      "storage_cost_tiered": 47.40421440000001,
+      "egress_cost": 11.05,
+      "cogs_bottom_up_standard": 97.669152,
+      "cogs_bottom_up_tiered": 66.45421440000001
+    },
+    {
+      "workload": "BASE",
+      "dedup": "whole-file",
+      "live_gb": 800,
+      "history_window_gb": 4183.2,
+      "history_kept_gb": 3916.0,
+      "total_stored_gb": 9077.184000000001,
+      "egress_gb": 400.0,
+      "storage_cost_standard": 208.77523200000002,
+      "storage_cost_tiered": 126.9895104,
+      "egress_cost": 34.0,
+      "cogs_bottom_up_standard": 250.77523200000002,
+      "cogs_bottom_up_tiered": 168.9895104
+    },
+    {
+      "workload": "BASE",
+      "dedup": "chunk",
+      "live_gb": 800,
+      "history_window_gb": 1703.5200000000002,
+      "history_kept_gb": 1610.4,
+      "total_stored_gb": 4196.1984,
+      "egress_gb": 400.0,
+      "storage_cost_standard": 96.5125632,
+      "storage_cost_tiered": 63.048599040000006,
+      "egress_cost": 34.0,
+      "cogs_bottom_up_standard": 138.5125632,
+      "cogs_bottom_up_tiered": 105.04859904
+    },
+    {
+      "workload": "HEAVY",
+      "dedup": "whole-file",
+      "live_gb": 5400,
+      "history_window_gb": 4183.2,
+      "history_kept_gb": 3916.0,
+      "total_stored_gb": 13769.184000000001,
+      "egress_gb": 2160.0,
+      "storage_cost_standard": 316.691232,
+      "storage_cost_tiered": 234.9055104,
+      "egress_cost": 183.60000000000002,
+      "cogs_bottom_up_standard": 508.29123200000004,
+      "cogs_bottom_up_tiered": 426.50551040000005
+    },
+    {
+      "workload": "HEAVY",
+      "dedup": "chunk",
+      "live_gb": 5400,
+      "history_window_gb": 1703.5200000000002,
+      "history_kept_gb": 1610.4,
+      "total_stored_gb": 8888.198400000001,
+      "egress_gb": 2160.0,
+      "storage_cost_standard": 204.4285632,
+      "storage_cost_tiered": 170.96459904,
+      "egress_cost": 183.60000000000002,
+      "cogs_bottom_up_standard": 396.0285632,
+      "cogs_bottom_up_tiered": 362.56459904
+    }
+  ],
+  "scenarios": [
+    {
+      "name": "BEAR",
+      "customersM12": 4.5,
+      "customersM24": 25.0,
+      "customersM36": 52.4,
+      "byTierM36": {
+        "Solo": 26.2,
+        "Studio": 23.6,
+        "Plus": 2.6
+      },
+      "arrM12USD": 10335,
+      "arrM24USD": 60611,
+      "arrM36USD": 132798,
+      "mrrM36": 11066,
+      "expansionShareM36": 0.106,
+      "grossMarginPct": 63.3,
+      "grossProfitM36": 7008,
+      "breakevenMonth": ">96 (not reached, new-customer rate keeps compounding at 4%/mo); >96 (not reached, new-customer rate frozen at its m36 level)",
+      "breakevenMonthGrowthContinues": null,
+      "breakevenMonthGrowthFrozen": null,
+      "cumulativeCashNeedUSD": 4895911,
+      "cumulativeCashNeedToBreakevenUSD": null,
+      "cumRevenue36": 135307,
+      "cumGrossProfit36": 84089,
+      "cumBurn36": 4980000,
+      "arpaM36": 211.31,
+      "cac": 4205,
+      "totalNew36": 70.6,
+      "totalSM36": 297000,
+      "paybackMonths": 31.4,
+      "ltv": 4460,
+      "ltvCac": 1.06,
+      "churnMo": 0.03,
+      "sensitivityBottomUpCogs": {
+        "this file bottom-up, chunk + tiered": {
+          "cogs": {
+            "Solo": 12,
+            "Studio": 141,
+            "Plus": 220
+          },
+          "gmM36": 61.9,
+          "grossProfitM36": 6851
+        },
+        "infra model, whole-file dedup, fan-out 1.0": {
+          "cogs": {
+            "Solo": 40,
+            "Studio": 307,
+            "Plus": 900
+          },
+          "gmM36": 3.8,
+          "grossProfitM36": 420
+        },
+        "infra model, chunk dedup, fan-out 1.0": {
+          "cogs": {
+            "Solo": 20,
+            "Studio": 146,
+            "Plus": 420
+          },
+          "gmM36": 54.3,
+          "grossProfitM36": 6006
+        },
+        "infra model, chunk dedup, fan-out 0 (pull on demand only; BASE/HEAVY estimated)": {
+          "cogs": {
+            "Solo": 12,
+            "Studio": 69,
+            "Plus": 200
+          },
+          "gmM36": 77.8,
+          "grossProfitM36": 8610
+        }
+      }
+    },
+    {
+      "name": "BASE",
+      "customersM12": 9.5,
+      "customersM24": 67.3,
+      "customersM36": 187.8,
+      "byTierM36": {
+        "Solo": 75.1,
+        "Studio": 93.9,
+        "Plus": 18.8
+      },
+      "arrM12USD": 28096,
+      "arrM24USD": 210392,
+      "arrM36USD": 606194,
+      "mrrM36": 50516,
+      "expansionShareM36": 0.082,
+      "grossMarginPct": 69.1,
+      "grossProfitM36": 34928,
+      "breakevenMonth": "m59 (extrapolated past the 36-month plan, new-customer rate keeps compounding at 7%/mo, burn held at $180,000/mo); >96 (not reached, new-customer rate frozen at its m36 level)",
+      "breakevenMonthGrowthContinues": 59,
+      "breakevenMonthGrowthFrozen": null,
+      "cumulativeCashNeedUSD": 4624129,
+      "cumulativeCashNeedToBreakevenUSD": 6573023,
+      "cumRevenue36": 519371,
+      "cumGrossProfit36": 355871,
+      "cumBurn36": 4980000,
+      "arpaM36": 268.98,
+      "cac": 1571,
+      "totalNew36": 223.5,
+      "totalSM36": 351000,
+      "paybackMonths": 8.4,
+      "ltv": 9299,
+      "ltvCac": 5.92,
+      "churnMo": 0.02,
+      "sensitivityBottomUpCogs": {
+        "this file bottom-up, chunk + tiered": {
+          "cogs": {
+            "Solo": 12,
+            "Studio": 141,
+            "Plus": 220
+          },
+          "gmM36": 63.8,
+          "grossProfitM36": 32232
+        },
+        "infra model, whole-file dedup, fan-out 1.0": {
+          "cogs": {
+            "Solo": 40,
+            "Studio": 307,
+            "Plus": 900
+          },
+          "gmM36": 3.5,
+          "grossProfitM36": 1752
+        },
+        "infra model, chunk dedup, fan-out 1.0": {
+          "cogs": {
+            "Solo": 20,
+            "Studio": 146,
+            "Plus": 420
+          },
+          "gmM36": 54.3,
+          "grossProfitM36": 27432
+        },
+        "infra model, chunk dedup, fan-out 0 (pull on demand only; BASE/HEAVY estimated)": {
+          "cogs": {
+            "Solo": 12,
+            "Studio": 69,
+            "Plus": 200
+          },
+          "gmM36": 78.0,
+          "grossProfitM36": 39411
+        }
+      }
+    },
+    {
+      "name": "BULL",
+      "customersM12": 16.2,
+      "customersM24": 135.5,
+      "customersM36": 456.2,
+      "byTierM36": {
+        "Solo": 159.7,
+        "Studio": 228.1,
+        "Plus": 68.4
+      },
+      "arrM12USD": 56518,
+      "arrM24USD": 493691,
+      "arrM36USD": 1702943,
+      "mrrM36": 141912,
+      "expansionShareM36": 0.065,
+      "grossMarginPct": 72.0,
+      "grossProfitM36": 102223,
+      "breakevenMonth": "m43 (extrapolated past the 36-month plan, new-customer rate keeps compounding at 9%/mo, burn held at $180,000/mo); m45 (extrapolated past the 36-month plan, new-customer rate frozen at its m36 level, burn held at $180,000/mo)",
+      "breakevenMonthGrowthContinues": 43,
+      "breakevenMonthGrowthFrozen": 45,
+      "cumulativeCashNeedUSD": 4038043,
+      "cumulativeCashNeedToBreakevenUSD": 4256607,
+      "cumRevenue36": 1314671,
+      "cumGrossProfit36": 941957,
+      "cumBurn36": 4980000,
+      "arpaM36": 311.08,
+      "cac": 789,
+      "totalNew36": 513.6,
+      "totalSM36": 405000,
+      "paybackMonths": 3.5,
+      "ltv": 14938,
+      "ltvCac": 18.94,
+      "churnMo": 0.015,
+      "sensitivityBottomUpCogs": {
+        "this file bottom-up, chunk + tiered": {
+          "cogs": {
+            "Solo": 12,
+            "Studio": 141,
+            "Plus": 220
+          },
+          "gmM36": 65.4,
+          "grossProfitM36": 92753
+        },
+        "infra model, whole-file dedup, fan-out 1.0": {
+          "cogs": {
+            "Solo": 40,
+            "Studio": 307,
+            "Plus": 900
+          },
+          "gmM36": 2.7,
+          "grossProfitM36": 3846
+        },
+        "infra model, chunk dedup, fan-out 1.0": {
+          "cogs": {
+            "Solo": 20,
+            "Studio": 146,
+            "Plus": 420
+          },
+          "gmM36": 54.1,
+          "grossProfitM36": 76714
+        },
+        "infra model, chunk dedup, fan-out 0 (pull on demand only; BASE/HEAVY estimated)": {
+          "cogs": {
+            "Solo": 12,
+            "Studio": 69,
+            "Plus": 200
+          },
+          "gmM36": 78.0,
+          "grossProfitM36": 110648
+        }
+      }
+    }
+  ]
+}

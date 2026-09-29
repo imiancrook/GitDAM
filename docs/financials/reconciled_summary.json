@@ -1,0 +1,1197 @@
+{
+  "generated": "2026-09-29",
+  "payroll": "us",
+  "plusTeamScale": 1.0,
+  "inputs": [
+    {
+      "input": "First revenue month",
+      "value": "11",
+      "source": "build model (Phase 2 ships M11); pnl model said M10 -> reconciled to M11"
+    },
+    {
+      "input": "OpenSearch Serverless turned on (Phase 3 complete)",
+      "value": "17",
+      "source": "build model: Phase 3 is M12-M16; infra platform fixed jumps from $100 to $451 when it ships"
+    },
+    {
+      "input": "Customers per support/CS hire",
+      "value": "150",
+      "source": "estimate; SMB SaaS norm 100-200 accounts per CSM"
+    },
+    {
+      "input": "Support/CS hire base salary",
+      "value": "100000",
+      "source": "estimate; loaded x1.3 like the build model"
+    },
+    {
+      "input": "Founder growth time attributed to S&M (non-cash, CAC only) $/mo",
+      "value": "5000",
+      "source": "pnl model; founder salary deferred so it is not in cash burn"
+    },
+    {
+      "input": "Build model 'production baseline' AWS step moved out of opex $/mo",
+      "value": "1000",
+      "source": "build model had AWS $1.5k -> $2.5k at M12; the extra $1k is the platform-fixed cost now carried in COGS from the infra model, so it is removed from opex to avoid double counting"
+    },
+    {
+      "input": "Year-3 non-payroll annuals",
+      "value": "accounting/tax $3k M36; dev programs $700 M29; conference $12k M32",
+      "source": "build model pattern continued"
+    },
+    {
+      "input": "Plus workload team scale vs 15-person reference",
+      "value": "1.0",
+      "source": "task mapping 'Plus ~ HEAVY'; a 30-60 person studio is 2-4x, see --plus-team-scale sensitivity"
+    },
+    {
+      "input": "Solo workload",
+      "value": "LIGHT infra scenario with 1 designer, 1 active user, 3 guests, per-team GB estimates /8, fan-out 0 (one member: nobody else's disk to fan out to)",
+      "source": "task mapping 'Solo ~ LIGHT/8'; live 80 GB +4/mo from pnl model"
+    },
+    {
+      "input": "HEAVY live growth GB/mo",
+      "value": "318",
+      "source": "infra: 12,000 RAW x 25 MB = 293 GB (binary GB) + 20 GB renders + 5 GB design; pnl model had 325 (decimal GB)"
+    },
+    {
+      "input": "Studio cohort workload mix LIGHT/BASE/HEAVY",
+      "value": "40/40/20",
+      "source": "pnl model"
+    },
+    {
+      "input": "COGS follows the cohort's WORKLOAD, not the billed tier",
+      "value": "yes",
+      "source": "reconciliation: a HEAVY agency right-sized to Plus still costs what a HEAVY agency costs; retention follows the billed tier"
+    },
+    {
+      "input": "Milestone history",
+      "value": "grows with cohort age (kept forever)",
+      "source": "pnl tiers 'milestones and releases forever'; infra model froze it at 6 months"
+    },
+    {
+      "input": "Intelligent-Tiering split on long-lived bytes",
+      "value": "age-aware: live/previews/proxies 50/30/20 (infra), milestone history newest month Frequent, next 2 Infrequent, older Archive-Instant",
+      "source": "estimate; infra used a fixed 50/30/20"
+    },
+    {
+      "input": "Auto-snapshot window cost by tier retention",
+      "value": "window GB x (retention_days/30 - 1) x $0.023 added on top of the infra 30-day window",
+      "source": "pnl tiers promise 30/90/365 d; DESIGN s11.3 squashes at 30 d (project setting); infra costed 30 d only"
+    },
+    {
+      "input": "Egress against the tier allowance",
+      "value": "infra model egress GB (S3 presigned + CloudFront)",
+      "source": "pnl model used 0.4-0.5 x live GB"
+    },
+    {
+      "input": "Paid marketing",
+      "value": "BEAR $6k / BASE $8k / BULL $10k per month from first revenue, added to burn",
+      "source": "pnl scenarios; the build model explicitly excluded paid marketing"
+    },
+    {
+      "input": "Burn M25-36",
+      "value": "M24 payroll ($124.0k US / $96.1k mix) + steady non-payroll ($5.1k) + support hires + paid marketing",
+      "source": "estimate; pnl placeholder was $180k"
+    },
+    {
+      "input": "Burn beyond M36 (breakeven search only)",
+      "value": "same formula as M25-36",
+      "source": "estimate"
+    },
+    {
+      "input": "Founder/CTO salary",
+      "value": "$0, deferred, excluded (would add ~$13k/mo at $120k base)",
+      "source": "build model"
+    },
+    {
+      "input": "Platform fixed $/mo",
+      "value": "$451.03 from M17 (2 OCU OpenSearch); $100.39 M11-M16; $0 before revenue (dev/staging is opex)",
+      "source": "infra model; build model guessed OpenSearch ~$700 (4 OCU), reconciled to the fetched 2-OCU price, 4-OCU = +$350"
+    }
+  ],
+  "configs": {
+    "A": "A. As designed at Phase 2 ship: whole-file dedup, sync fan-out 1.0, tier retention 30/90/365 d",
+    "B": "B. A + chunk-level dedup in Phase 2 (ASSUMPTIONS decision 4; +2-3 EM, +1 month)",
+    "C": "C. B + pull-on-demand sync (auto-snapshots are not pushed to colleagues' disks; fan-out 0)",
+    "D": "D. C + auto-snapshot window 30 d on every tier (tiers differ by storage and support only)"
+  },
+  "recommended": "D",
+  "cogsByTier": [
+    {
+      "tier": "Solo",
+      "workload": "SOLO",
+      "config": "A",
+      "cogs": {
+        "0": 11.06,
+        "12": 13.36,
+        "24": 15.02,
+        "36": 16.69
+      },
+      "retentionAdderAge12": 0.0,
+      "egressUsdAge12": 1.09,
+      "egressGbAge12": 12,
+      "priceAge12": 19.0,
+      "billedTierAge12": "Solo",
+      "gmExFixedAge12": 29.7,
+      "egressPctOfPriceAge12": 5.7
+    },
+    {
+      "tier": "Solo",
+      "workload": "SOLO",
+      "config": "B",
+      "cogs": {
+        "0": 6.28,
+        "12": 7.68,
+        "24": 8.82,
+        "36": 9.96
+      },
+      "retentionAdderAge12": 0.0,
+      "egressUsdAge12": 1.09,
+      "egressGbAge12": 12,
+      "priceAge12": 19.0,
+      "billedTierAge12": "Solo",
+      "gmExFixedAge12": 59.6,
+      "egressPctOfPriceAge12": 5.7
+    },
+    {
+      "tier": "Solo",
+      "workload": "SOLO",
+      "config": "C",
+      "cogs": {
+        "0": 6.28,
+        "12": 7.68,
+        "24": 8.82,
+        "36": 9.96
+      },
+      "retentionAdderAge12": 0.0,
+      "egressUsdAge12": 1.09,
+      "egressGbAge12": 12,
+      "priceAge12": 19.0,
+      "billedTierAge12": "Solo",
+      "gmExFixedAge12": 59.6,
+      "egressPctOfPriceAge12": 5.7
+    },
+    {
+      "tier": "Solo",
+      "workload": "SOLO",
+      "config": "D",
+      "cogs": {
+        "0": 6.28,
+        "12": 7.68,
+        "24": 8.82,
+        "36": 9.96
+      },
+      "retentionAdderAge12": 0.0,
+      "egressUsdAge12": 1.09,
+      "egressGbAge12": 12,
+      "priceAge12": 19.0,
+      "billedTierAge12": "Solo",
+      "gmExFixedAge12": 59.6,
+      "egressPctOfPriceAge12": 5.7
+    },
+    {
+      "tier": "Studio",
+      "workload": "LIGHT",
+      "config": "A",
+      "cogs": {
+        "0": 369.15,
+        "12": 382.19,
+        "24": 390.15,
+        "36": 398.11
+      },
+      "retentionAdderAge12": 97.15,
+      "egressUsdAge12": 198.83,
+      "egressGbAge12": 2212,
+      "priceAge12": 299.0,
+      "billedTierAge12": "Studio",
+      "gmExFixedAge12": -27.8,
+      "egressPctOfPriceAge12": 66.5
+    },
+    {
+      "tier": "Studio",
+      "workload": "LIGHT",
+      "config": "B",
+      "cogs": {
+        "0": 158.59,
+        "12": 164.4,
+        "24": 168.18,
+        "36": 171.96
+      },
+      "retentionAdderAge12": 38.86,
+      "egressUsdAge12": 84.78,
+      "egressGbAge12": 945,
+      "priceAge12": 299.0,
+      "billedTierAge12": "Studio",
+      "gmExFixedAge12": 45.0,
+      "egressPctOfPriceAge12": 28.4
+    },
+    {
+      "tier": "Studio",
+      "workload": "LIGHT",
+      "config": "C",
+      "cogs": {
+        "0": 82.55,
+        "12": 88.36,
+        "24": 92.14,
+        "36": 95.92
+      },
+      "retentionAdderAge12": 38.86,
+      "egressUsdAge12": 8.75,
+      "egressGbAge12": 100,
+      "priceAge12": 299.0,
+      "billedTierAge12": "Studio",
+      "gmExFixedAge12": 70.4,
+      "egressPctOfPriceAge12": 2.9
+    },
+    {
+      "tier": "Studio",
+      "workload": "LIGHT",
+      "config": "D",
+      "cogs": {
+        "0": 43.69,
+        "12": 49.5,
+        "24": 53.28,
+        "36": 57.06
+      },
+      "retentionAdderAge12": 0.0,
+      "egressUsdAge12": 8.75,
+      "egressGbAge12": 100,
+      "priceAge12": 299.0,
+      "billedTierAge12": "Studio",
+      "gmExFixedAge12": 83.4,
+      "egressPctOfPriceAge12": 2.9
+    },
+    {
+      "tier": "Studio",
+      "workload": "BASE",
+      "config": "A",
+      "cogs": {
+        "0": 391.39,
+        "12": 410.95,
+        "24": 424.72,
+        "36": 438.48
+      },
+      "retentionAdderAge12": 97.75,
+      "egressUsdAge12": 210.66,
+      "egressGbAge12": 2347,
+      "priceAge12": 299.0,
+      "billedTierAge12": "Studio",
+      "gmExFixedAge12": -37.4,
+      "egressPctOfPriceAge12": 70.5
+    },
+    {
+      "tier": "Studio",
+      "workload": "BASE",
+      "config": "B",
+      "cogs": {
+        "0": 179.6,
+        "12": 191.24,
+        "24": 200.43,
+        "36": 209.62
+      },
+      "retentionAdderAge12": 39.1,
+      "egressUsdAge12": 95.92,
+      "egressGbAge12": 1072,
+      "priceAge12": 299.0,
+      "billedTierAge12": "Studio",
+      "gmExFixedAge12": 36.0,
+      "egressPctOfPriceAge12": 32.1
+    },
+    {
+      "tier": "Studio",
+      "workload": "BASE",
+      "config": "C",
+      "cogs": {
+        "0": 103.09,
+        "12": 114.74,
+        "24": 123.93,
+        "36": 133.12
+      },
+      "retentionAdderAge12": 39.1,
+      "egressUsdAge12": 19.42,
+      "egressGbAge12": 222,
+      "priceAge12": 299.0,
+      "billedTierAge12": "Studio",
+      "gmExFixedAge12": 61.6,
+      "egressPctOfPriceAge12": 6.5
+    },
+    {
+      "tier": "Studio",
+      "workload": "BASE",
+      "config": "D",
+      "cogs": {
+        "0": 63.99,
+        "12": 75.64,
+        "24": 84.83,
+        "36": 94.02
+      },
+      "retentionAdderAge12": 0.0,
+      "egressUsdAge12": 19.42,
+      "egressGbAge12": 222,
+      "priceAge12": 299.0,
+      "billedTierAge12": "Studio",
+      "gmExFixedAge12": 74.7,
+      "egressPctOfPriceAge12": 6.5
+    },
+    {
+      "tier": "Studio",
+      "workload": "HEAVY",
+      "config": "A",
+      "cogs": {
+        "0": 426.89,
+        "12": 504.47,
+        "24": 576.26,
+        "36": 648.05
+      },
+      "retentionAdderAge12": 97.75,
+      "egressUsdAge12": 216.87,
+      "egressGbAge12": 2418,
+      "priceAge12": 630.6,
+      "billedTierAge12": "Studio",
+      "gmExFixedAge12": 20.0,
+      "egressPctOfPriceAge12": 34.4
+    },
+    {
+      "tier": "Studio",
+      "workload": "HEAVY",
+      "config": "B",
+      "cogs": {
+        "0": 215.1,
+        "12": 284.76,
+        "24": 351.97,
+        "36": 419.18
+      },
+      "retentionAdderAge12": 39.1,
+      "egressUsdAge12": 102.12,
+      "egressGbAge12": 1143,
+      "priceAge12": 630.6,
+      "billedTierAge12": "Studio",
+      "gmExFixedAge12": 54.8,
+      "egressPctOfPriceAge12": 16.2
+    },
+    {
+      "tier": "Studio",
+      "workload": "HEAVY",
+      "config": "C",
+      "cogs": {
+        "0": 138.6,
+        "12": 208.26,
+        "24": 275.47,
+        "36": 342.68
+      },
+      "retentionAdderAge12": 39.1,
+      "egressUsdAge12": 25.63,
+      "egressGbAge12": 293,
+      "priceAge12": 630.6,
+      "billedTierAge12": "Studio",
+      "gmExFixedAge12": 67.0,
+      "egressPctOfPriceAge12": 4.1
+    },
+    {
+      "tier": "Studio",
+      "workload": "HEAVY",
+      "config": "D",
+      "cogs": {
+        "0": 99.5,
+        "12": 169.16,
+        "24": 236.37,
+        "36": 303.58
+      },
+      "retentionAdderAge12": 0.0,
+      "egressUsdAge12": 25.63,
+      "egressGbAge12": 293,
+      "priceAge12": 630.6,
+      "billedTierAge12": "Studio",
+      "gmExFixedAge12": 73.2,
+      "egressPctOfPriceAge12": 4.1
+    },
+    {
+      "tier": "Plus",
+      "workload": "PLUS",
+      "config": "A",
+      "cogs": {
+        "0": 899.64,
+        "12": 943.95,
+        "24": 982.47,
+        "36": 1021.0
+      },
+      "retentionAdderAge12": 545.75,
+      "egressUsdAge12": 216.87,
+      "egressGbAge12": 2418,
+      "priceAge12": 899.0,
+      "billedTierAge12": "Plus",
+      "gmExFixedAge12": -5.0,
+      "egressPctOfPriceAge12": 24.1
+    },
+    {
+      "tier": "Plus",
+      "workload": "PLUS",
+      "config": "B",
+      "cogs": {
+        "0": 419.06,
+        "12": 455.46,
+        "24": 489.4,
+        "36": 523.34
+      },
+      "retentionAdderAge12": 218.31,
+      "egressUsdAge12": 102.12,
+      "egressGbAge12": 1143,
+      "priceAge12": 899.0,
+      "billedTierAge12": "Plus",
+      "gmExFixedAge12": 49.3,
+      "egressPctOfPriceAge12": 11.4
+    },
+    {
+      "tier": "Plus",
+      "workload": "PLUS",
+      "config": "C",
+      "cogs": {
+        "0": 342.56,
+        "12": 378.96,
+        "24": 412.9,
+        "36": 446.84
+      },
+      "retentionAdderAge12": 218.31,
+      "egressUsdAge12": 25.63,
+      "egressGbAge12": 293,
+      "priceAge12": 899.0,
+      "billedTierAge12": "Plus",
+      "gmExFixedAge12": 57.8,
+      "egressPctOfPriceAge12": 2.9
+    },
+    {
+      "tier": "Plus",
+      "workload": "PLUS",
+      "config": "D",
+      "cogs": {
+        "0": 124.25,
+        "12": 160.65,
+        "24": 194.59,
+        "36": 228.53
+      },
+      "retentionAdderAge12": 0.0,
+      "egressUsdAge12": 25.63,
+      "egressGbAge12": 293,
+      "priceAge12": 899.0,
+      "billedTierAge12": "Plus",
+      "gmExFixedAge12": 82.1,
+      "egressPctOfPriceAge12": 2.9
+    }
+  ],
+  "burnByPeriod": [
+    {
+      "period": "Q1 (M1-3): Phase 0 + 0.5 + Phase 1 start",
+      "payrollAvg": 32319,
+      "nonpayrollAvg": 8647,
+      "opexAvg": 40966,
+      "total": 122898,
+      "cumulative": 122898
+    },
+    {
+      "period": "Q2 (M4-6): Phase 1 finish, concierge, Phase 2 start",
+      "payrollAvg": 58500,
+      "nonpayrollAvg": 8080,
+      "opexAvg": 66580,
+      "total": 199740,
+      "cumulative": 322638
+    },
+    {
+      "period": "Q3 (M7-9): Phase 2 (sync client)",
+      "payrollAvg": 79625,
+      "nonpayrollAvg": 7522,
+      "opexAvg": 87147,
+      "total": 261440,
+      "cumulative": 584078
+    },
+    {
+      "period": "Q4 (M10-12): Phase 2 ship, first revenue M11, Phase 3 start",
+      "payrollAvg": 85042,
+      "nonpayrollAvg": 10872,
+      "opexAvg": 95913,
+      "total": 287740,
+      "cumulative": 871818
+    },
+    {
+      "period": "Q5 (M13-15): Phase 3",
+      "payrollAvg": 102375,
+      "nonpayrollAvg": 6122,
+      "opexAvg": 108497,
+      "total": 325490,
+      "cumulative": 1197308
+    },
+    {
+      "period": "Q6 (M16-18): Phase 3 finish, Phase 4 start",
+      "payrollAvg": 102375,
+      "nonpayrollAvg": 5188,
+      "opexAvg": 107563,
+      "total": 322690,
+      "cumulative": 1519998
+    },
+    {
+      "period": "Q7 (M19-21): Phase 4",
+      "payrollAvg": 124042,
+      "nonpayrollAvg": 10272,
+      "opexAvg": 134313,
+      "total": 402940,
+      "cumulative": 1922938
+    },
+    {
+      "period": "Q8 (M22-24): Phase 5 (partial)",
+      "payrollAvg": 124042,
+      "nonpayrollAvg": 6105,
+      "opexAvg": 130147,
+      "total": 390440,
+      "cumulative": 2313378
+    },
+    {
+      "period": "Q9-Q12 (M25-36): held at M24 run-rate",
+      "payrollAvg": 124042,
+      "nonpayrollAvg": 6413,
+      "opexAvg": 130455,
+      "total": 1565460,
+      "cumulative": 3878838
+    }
+  ],
+  "scenarios": [
+    {
+      "scenario": "BEAR",
+      "config": "A",
+      "customersM12": 3.0,
+      "customersM24": 23.1,
+      "customersM36": 49.7,
+      "byTierM36": {
+        "Solo": 24.9,
+        "Studio": 22.4,
+        "Plus": 2.5
+      },
+      "arrM12": 6838,
+      "arrM24": 55640,
+      "arrM36": 125320,
+      "mrrM36": 10443,
+      "cogsM36": 12286,
+      "cogsVariableM36": 11835,
+      "cogsFixedM36": 451,
+      "grossMarginPctM36": -17.6,
+      "grossMarginPctM36ExFixed": -13.3,
+      "grossMarginPctM24": -26.5,
+      "burnM12": 98847,
+      "burnM24": 138147,
+      "burnM36": 138147,
+      "netCashM12": -99062,
+      "netCashM24": -139377,
+      "netCashM36": -139989,
+      "breakevenGrowthContinues": null,
+      "breakevenGrowthFrozen": null,
+      "cumCashNeed36": 4063757,
+      "cumCashNeedToBreakeven": null,
+      "cumRevenue36": 123995,
+      "cumGrossProfit36": -28918,
+      "cumBurn36": 4034838,
+      "arpaM36": 210.11,
+      "cac": 8237,
+      "totalNew36": 66.5,
+      "totalSM36": 547500,
+      "paybackMonths": null,
+      "ltv": 0,
+      "ltvCac": 0.0,
+      "expansionShareM36": 0.1
+    },
+    {
+      "scenario": "BASE",
+      "config": "A",
+      "customersM12": 6.2,
+      "customersM24": 60.8,
+      "customersM36": 173.9,
+      "byTierM36": {
+        "Solo": 69.5,
+        "Studio": 86.9,
+        "Plus": 17.4
+      },
+      "arrM12": 18229,
+      "arrM24": 189083,
+      "arrM36": 558893,
+      "mrrM36": 46574,
+      "cogsM36": 53104,
+      "cogsVariableM36": 52653,
+      "cogsFixedM36": 451,
+      "grossMarginPctM36": -14.0,
+      "grossMarginPctM36ExFixed": -13.1,
+      "grossMarginPctM24": -18.3,
+      "burnM12": 100847,
+      "burnM24": 140147,
+      "burnM36": 150980,
+      "netCashM12": -101216,
+      "netCashM24": -143023,
+      "netCashM36": -157509,
+      "breakevenGrowthContinues": null,
+      "breakevenGrowthFrozen": null,
+      "cumCashNeed36": 4185485,
+      "cumCashNeedToBreakeven": null,
+      "cumRevenue36": 468087,
+      "cumGrossProfit36": -76980,
+      "cumBurn36": 4108505,
+      "arpaM36": 267.88,
+      "cac": 2910,
+      "totalNew36": 206.0,
+      "totalSM36": 599500,
+      "paybackMonths": null,
+      "ltv": 0,
+      "ltvCac": 0.0,
+      "expansionShareM36": 0.078
+    },
+    {
+      "scenario": "BULL",
+      "config": "A",
+      "customersM12": 10.4,
+      "customersM24": 120.6,
+      "customersM36": 415.4,
+      "byTierM36": {
+        "Solo": 145.4,
+        "Studio": 207.7,
+        "Plus": 62.3
+      },
+      "arrM12": 36230,
+      "arrM24": 437675,
+      "arrM36": 1546027,
+      "mrrM36": 128836,
+      "cogsM36": 144935,
+      "cogsVariableM36": 144484,
+      "cogsFixedM36": 451,
+      "grossMarginPctM36": -12.5,
+      "grossMarginPctM36ExFixed": -12.1,
+      "grossMarginPctM24": -15.0,
+      "burnM12": 102847,
+      "burnM24": 142147,
+      "burnM36": 163813,
+      "netCashM12": -103406,
+      "netCashM24": -147606,
+      "netCashM36": -179913,
+      "breakevenGrowthContinues": null,
+      "breakevenGrowthFrozen": null,
+      "cumCashNeed36": 4462991,
+      "cumCashNeedToBreakeven": null,
+      "cumRevenue36": 1171175,
+      "cumGrossProfit36": -161653,
+      "cumBurn36": 4301338,
+      "arpaM36": 310.12,
+      "cac": 1396,
+      "totalNew36": 466.6,
+      "totalSM36": 651500,
+      "paybackMonths": null,
+      "ltv": 0,
+      "ltvCac": 0.0,
+      "expansionShareM36": 0.062
+    },
+    {
+      "scenario": "BEAR",
+      "config": "B",
+      "customersM12": 3.0,
+      "customersM24": 23.1,
+      "customersM36": 49.7,
+      "byTierM36": {
+        "Solo": 24.9,
+        "Studio": 22.4,
+        "Plus": 2.5
+      },
+      "arrM12": 6838,
+      "arrM24": 55640,
+      "arrM36": 125320,
+      "mrrM36": 10443,
+      "cogsM36": 6079,
+      "cogsVariableM36": 5628,
+      "cogsFixedM36": 451,
+      "grossMarginPctM36": 41.8,
+      "grossMarginPctM36ExFixed": 46.1,
+      "grossMarginPctM24": 35.3,
+      "burnM12": 98847,
+      "burnM24": 138147,
+      "burnM36": 138147,
+      "netCashM12": -98694,
+      "netCashM24": -136508,
+      "netCashM36": -133782,
+      "breakevenGrowthContinues": null,
+      "breakevenGrowthFrozen": null,
+      "cumCashNeed36": 3988102,
+      "cumCashNeedToBreakeven": null,
+      "cumRevenue36": 123995,
+      "cumGrossProfit36": 46736,
+      "cumBurn36": 4034838,
+      "arpaM36": 210.11,
+      "cac": 8237,
+      "totalNew36": 66.5,
+      "totalSM36": 547500,
+      "paybackMonths": 93.8,
+      "ltv": 2927,
+      "ltvCac": 0.36,
+      "expansionShareM36": 0.1
+    },
+    {
+      "scenario": "BASE",
+      "config": "B",
+      "customersM12": 6.2,
+      "customersM24": 60.8,
+      "customersM36": 173.9,
+      "byTierM36": {
+        "Solo": 69.5,
+        "Studio": 86.9,
+        "Plus": 17.4
+      },
+      "arrM12": 18229,
+      "arrM24": 189083,
+      "arrM36": 558893,
+      "mrrM36": 46574,
+      "cogsM36": 25408,
+      "cogsVariableM36": 24957,
+      "cogsFixedM36": 451,
+      "grossMarginPctM36": 45.4,
+      "grossMarginPctM36ExFixed": 46.4,
+      "grossMarginPctM24": 42.9,
+      "burnM12": 100847,
+      "burnM24": 140147,
+      "burnM36": 150980,
+      "netCashM12": -100255,
+      "netCashM24": -133379,
+      "netCashM36": -129813,
+      "breakevenGrowthContinues": 73,
+      "breakevenGrowthFrozen": null,
+      "cumCashNeed36": 3902457,
+      "cumCashNeedToBreakeven": 6960326,
+      "cumRevenue36": 468087,
+      "cumGrossProfit36": 206048,
+      "cumBurn36": 4108505,
+      "arpaM36": 267.88,
+      "cac": 2910,
+      "totalNew36": 206.0,
+      "totalSM36": 599500,
+      "paybackMonths": 23.9,
+      "ltv": 6087,
+      "ltvCac": 2.09,
+      "expansionShareM36": 0.078
+    },
+    {
+      "scenario": "BULL",
+      "config": "B",
+      "customersM12": 10.4,
+      "customersM24": 120.6,
+      "customersM36": 415.4,
+      "byTierM36": {
+        "Solo": 145.4,
+        "Studio": 207.7,
+        "Plus": 62.3
+      },
+      "arrM12": 36230,
+      "arrM24": 437675,
+      "arrM36": 1546027,
+      "mrrM36": 128836,
+      "cogsM36": 68843,
+      "cogsVariableM36": 68392,
+      "cogsFixedM36": 451,
+      "grossMarginPctM36": 46.6,
+      "grossMarginPctM36ExFixed": 46.9,
+      "grossMarginPctM24": 45.4,
+      "burnM12": 102847,
+      "burnM24": 142147,
+      "burnM36": 163813,
+      "netCashM12": -101538,
+      "netCashM24": -125604,
+      "netCashM36": -103821,
+      "breakevenGrowthContinues": 52,
+      "breakevenGrowthFrozen": 70,
+      "cumCashNeed36": 3763431,
+      "cumCashNeedToBreakeven": 4745867,
+      "cumRevenue36": 1171175,
+      "cumGrossProfit36": 537907,
+      "cumBurn36": 4301338,
+      "arpaM36": 310.12,
+      "cac": 1396,
+      "totalNew36": 466.6,
+      "totalSM36": 651500,
+      "paybackMonths": 9.7,
+      "ltv": 9627,
+      "ltvCac": 6.9,
+      "expansionShareM36": 0.062
+    },
+    {
+      "scenario": "BEAR",
+      "config": "C",
+      "customersM12": 3.0,
+      "customersM24": 23.1,
+      "customersM36": 49.7,
+      "byTierM36": {
+        "Solo": 24.9,
+        "Studio": 22.4,
+        "Plus": 2.5
+      },
+      "arrM12": 6838,
+      "arrM24": 55640,
+      "arrM36": 125320,
+      "mrrM36": 10443,
+      "cogsM36": 4182,
+      "cogsVariableM36": 3731,
+      "cogsFixedM36": 451,
+      "grossMarginPctM36": 60.0,
+      "grossMarginPctM36ExFixed": 64.3,
+      "grossMarginPctM24": 54.4,
+      "burnM12": 98847,
+      "burnM24": 138147,
+      "burnM36": 138147,
+      "netCashM12": -98579,
+      "netCashM24": -135625,
+      "netCashM36": -131885,
+      "breakevenGrowthContinues": null,
+      "breakevenGrowthFrozen": null,
+      "cumCashNeed36": 3964877,
+      "cumCashNeedToBreakeven": null,
+      "cumRevenue36": 123995,
+      "cumGrossProfit36": 69961,
+      "cumBurn36": 4034838,
+      "arpaM36": 210.11,
+      "cac": 8237,
+      "totalNew36": 66.5,
+      "totalSM36": 547500,
+      "paybackMonths": 65.4,
+      "ltv": 4199,
+      "ltvCac": 0.51,
+      "expansionShareM36": 0.1
+    },
+    {
+      "scenario": "BASE",
+      "config": "C",
+      "customersM12": 6.2,
+      "customersM24": 60.8,
+      "customersM36": 173.9,
+      "byTierM36": {
+        "Solo": 69.5,
+        "Studio": 86.9,
+        "Plus": 17.4
+      },
+      "arrM12": 18229,
+      "arrM24": 189083,
+      "arrM36": 558893,
+      "mrrM36": 46574,
+      "cogsM36": 17443,
+      "cogsVariableM36": 16992,
+      "cogsFixedM36": 451,
+      "grossMarginPctM36": 62.5,
+      "grossMarginPctM36ExFixed": 63.5,
+      "grossMarginPctM24": 60.6,
+      "burnM12": 100847,
+      "burnM24": 140147,
+      "burnM36": 150980,
+      "netCashM12": -99973,
+      "netCashM24": -130593,
+      "netCashM36": -121849,
+      "breakevenGrowthContinues": 65,
+      "breakevenGrowthFrozen": null,
+      "cumCashNeed36": 3820823,
+      "cumCashNeedToBreakeven": 5881416,
+      "cumRevenue36": 468087,
+      "cumGrossProfit36": 287682,
+      "cumBurn36": 4108505,
+      "arpaM36": 267.88,
+      "cac": 2910,
+      "totalNew36": 206.0,
+      "totalSM36": 599500,
+      "paybackMonths": 17.4,
+      "ltv": 8377,
+      "ltvCac": 2.88,
+      "expansionShareM36": 0.078
+    },
+    {
+      "scenario": "BULL",
+      "config": "C",
+      "customersM12": 10.4,
+      "customersM24": 120.6,
+      "customersM36": 415.4,
+      "byTierM36": {
+        "Solo": 145.4,
+        "Studio": 207.7,
+        "Plus": 62.3
+      },
+      "arrM12": 36230,
+      "arrM24": 437675,
+      "arrM36": 1546027,
+      "mrrM36": 128836,
+      "cogsM36": 48224,
+      "cogsVariableM36": 47773,
+      "cogsFixedM36": 451,
+      "grossMarginPctM36": 62.6,
+      "grossMarginPctM36ExFixed": 62.9,
+      "grossMarginPctM24": 61.8,
+      "burnM12": 102847,
+      "burnM24": 142147,
+      "burnM36": 163813,
+      "netCashM12": -101023,
+      "netCashM24": -119619,
+      "netCashM36": -83202,
+      "breakevenGrowthContinues": 47,
+      "breakevenGrowthFrozen": 54,
+      "cumCashNeed36": 3573441,
+      "cumCashNeedToBreakeven": 4049853,
+      "cumRevenue36": 1171175,
+      "cumGrossProfit36": 727898,
+      "cumBurn36": 4301338,
+      "arpaM36": 310.12,
+      "cac": 1396,
+      "totalNew36": 466.6,
+      "totalSM36": 651500,
+      "paybackMonths": 7.2,
+      "ltv": 12936,
+      "ltvCac": 9.27,
+      "expansionShareM36": 0.062
+    },
+    {
+      "scenario": "BEAR",
+      "config": "D",
+      "customersM12": 3.0,
+      "customersM24": 23.1,
+      "customersM36": 49.7,
+      "byTierM36": {
+        "Solo": 24.9,
+        "Studio": 22.4,
+        "Plus": 2.5
+      },
+      "arrM12": 6838,
+      "arrM24": 55640,
+      "arrM36": 125320,
+      "mrrM36": 10443,
+      "cogsM36": 2767,
+      "cogsVariableM36": 2316,
+      "cogsFixedM36": 451,
+      "grossMarginPctM36": 73.5,
+      "grossMarginPctM36ExFixed": 77.8,
+      "grossMarginPctM24": 68.6,
+      "burnM12": 98847,
+      "burnM24": 138147,
+      "burnM36": 138147,
+      "netCashM12": -98493,
+      "netCashM24": -134967,
+      "netCashM36": -130470,
+      "breakevenGrowthContinues": null,
+      "breakevenGrowthFrozen": null,
+      "cumCashNeed36": 3947555,
+      "cumCashNeedToBreakeven": null,
+      "cumRevenue36": 123995,
+      "cumGrossProfit36": 87284,
+      "cumBurn36": 4034838,
+      "arpaM36": 210.11,
+      "cac": 8237,
+      "totalNew36": 66.5,
+      "totalSM36": 547500,
+      "paybackMonths": 53.3,
+      "ltv": 5148,
+      "ltvCac": 0.62,
+      "expansionShareM36": 0.1
+    },
+    {
+      "scenario": "BASE",
+      "config": "D",
+      "customersM12": 6.2,
+      "customersM24": 60.8,
+      "customersM36": 173.9,
+      "byTierM36": {
+        "Solo": 69.5,
+        "Studio": 86.9,
+        "Plus": 17.4
+      },
+      "arrM12": 18229,
+      "arrM24": 189083,
+      "arrM36": 558893,
+      "mrrM36": 46574,
+      "cogsM36": 10257,
+      "cogsVariableM36": 9806,
+      "cogsFixedM36": 451,
+      "grossMarginPctM36": 78.0,
+      "grossMarginPctM36ExFixed": 78.9,
+      "grossMarginPctM24": 76.6,
+      "burnM12": 100847,
+      "burnM24": 140147,
+      "burnM36": 150980,
+      "netCashM12": -99719,
+      "netCashM24": -128079,
+      "netCashM36": -114663,
+      "breakevenGrowthContinues": 60,
+      "breakevenGrowthFrozen": null,
+      "cumCashNeed36": 3747165,
+      "cumCashNeedToBreakeven": 5286576,
+      "cumRevenue36": 468087,
+      "cumGrossProfit36": 361340,
+      "cumBurn36": 4108505,
+      "arpaM36": 267.88,
+      "cac": 2910,
+      "totalNew36": 206.0,
+      "totalSM36": 599500,
+      "paybackMonths": 13.9,
+      "ltv": 10444,
+      "ltvCac": 3.59,
+      "expansionShareM36": 0.078
+    },
+    {
+      "scenario": "BULL",
+      "config": "D",
+      "customersM12": 10.4,
+      "customersM24": 120.6,
+      "customersM36": 415.4,
+      "byTierM36": {
+        "Solo": 145.4,
+        "Studio": 207.7,
+        "Plus": 62.3
+      },
+      "arrM12": 36230,
+      "arrM24": 437675,
+      "arrM36": 1546027,
+      "mrrM36": 128836,
+      "cogsM36": 26518,
+      "cogsVariableM36": 26067,
+      "cogsFixedM36": 451,
+      "grossMarginPctM36": 79.4,
+      "grossMarginPctM36ExFixed": 79.8,
+      "grossMarginPctM24": 79.0,
+      "burnM12": 102847,
+      "burnM24": 142147,
+      "burnM36": 163813,
+      "netCashM12": -100481,
+      "netCashM24": -113318,
+      "netCashM36": -61496,
+      "breakevenGrowthContinues": 43,
+      "breakevenGrowthFrozen": 45,
+      "cumCashNeed36": 3373440,
+      "cumCashNeedToBreakeven": 3573452,
+      "cumRevenue36": 1171175,
+      "cumGrossProfit36": 927898,
+      "cumBurn36": 4301338,
+      "arpaM36": 310.12,
+      "cac": 1396,
+      "totalNew36": 466.6,
+      "totalSM36": 651500,
+      "paybackMonths": 5.7,
+      "ltv": 16419,
+      "ltvCac": 11.76,
+      "expansionShareM36": 0.062
+    }
+  ],
+  "t2GrossMarginAge12": {
+    "A/LIGHT": -35.4,
+    "A/BASE": -45.0,
+    "A/HEAVY": 16.4,
+    "B/LIGHT": 37.5,
+    "B/BASE": 28.5,
+    "B/HEAVY": 51.3,
+    "C/LIGHT": 62.9,
+    "C/BASE": 54.1,
+    "C/HEAVY": 63.4,
+    "D/LIGHT": 75.9,
+    "D/BASE": 67.2,
+    "D/HEAVY": 69.6
+  },
+  "discrepancies": [
+    {
+      "item": "Studio COGS",
+      "modelA": "infra: LIGHT $286 / BASE $310 / HEAVY $346 whole-file (fan-out 1.0, age 6)",
+      "modelB": "pnl: $90 placeholder; own bottom-up $128-169 tiered",
+      "resolution": "Replaced by infra_model.scenario() called per cohort workload and age; fixed platform cost added in total per month"
+    },
+    {
+      "item": "Solo COGS",
+      "modelA": "infra: not modelled",
+      "modelB": "pnl: $60 placeholder; bottom-up $5-12",
+      "resolution": "LIGHT scenario re-run with 1 designer, 1 user, 3 guests, per-team GB /8, fan-out 0: see COGS table (about $13 whole-file, $8 chunk at age 12)"
+    },
+    {
+      "item": "Plus COGS",
+      "modelA": "infra: not modelled; task maps Plus ~ HEAVY",
+      "modelB": "pnl: $140 placeholder; sensitivity used $200-900",
+      "resolution": "HEAVY scenario at the Plus live GB (3 TB +150/mo) with the 15-person activity profile (team scale 1.0); --plus-team-scale 2 shows a 30-person studio"
+    },
+    {
+      "item": "Burn",
+      "modelA": "build: $31k M1 rising to $133k M24, $779k to first revenue, $2.33M to M24 (US)",
+      "modelB": "pnl: $95k / $140k / $180k placeholders, $4.98M over 36 months",
+      "resolution": "Build model imported month by month for M1-24; M25-36 held at the M24 run-rate + support hires + paid marketing; 36-month burn is ~$4.2-4.3M, below the placeholder"
+    },
+    {
+      "item": "First revenue month",
+      "modelA": "build: M11",
+      "modelB": "pnl: M10",
+      "resolution": "M11"
+    },
+    {
+      "item": "Paid marketing",
+      "modelA": "build: excluded",
+      "modelB": "pnl: $6k/$8k/$10k inside the burn placeholder",
+      "resolution": "Added to burn from M11 per scenario"
+    },
+    {
+      "item": "Production AWS baseline",
+      "modelA": "build: AWS opex steps $1.5k -> $2.5k at M12",
+      "modelB": "infra: platform fixed $100 (pre-OpenSearch) / $451 (2 OCU) as COGS",
+      "resolution": "The $1k step is removed from opex; platform fixed is carried in COGS from M11 ($100) and M17 ($451). No double count"
+    },
+    {
+      "item": "OpenSearch cost",
+      "modelA": "build: '~$700/mo when it turns on, verify'",
+      "modelB": "infra: $350 for 2 OCU (fetched price), $701 for 4-OCU redundancy",
+      "resolution": "$350 (2 OCU) from M17; production redundancy would add $350/mo, a sensitivity"
+    },
+    {
+      "item": "Working days / captured snapshots / milestones",
+      "modelA": "infra: 22 days, 6 captured/day, 2 milestones/week",
+      "modelB": "pnl: 21 days, 12 captured/day (60% of saves), 1 milestone/day",
+      "resolution": "Infra values (they drive COGS); pnl's snapshot arithmetic is superseded"
+    },
+    {
+      "item": "Egress volume and price",
+      "modelA": "infra: 2,112-2,418 GB/mo at S3 $0.09 (sync fan-out) + 50-154 GB CloudFront",
+      "modelB": "pnl: 0.4-0.5 x live GB at CloudFront $0.085 ($11-34/mo)",
+      "resolution": "Infra values; the difference is DESIGN s8 'clean on disk -> replace' fanning auto-snapshots out to colleagues"
+    },
+    {
+      "item": "Tier retention",
+      "modelA": "infra: 30-day squash window only",
+      "modelB": "pnl: tiers promise 30 / 90 / 365 days of auto-snapshot history",
+      "resolution": "Costed: window GB x (retention/30 - 1) x $0.023; config D removes it"
+    },
+    {
+      "item": "Milestone history",
+      "modelA": "infra: frozen at 6 months",
+      "modelB": "pnl: milestones kept forever",
+      "resolution": "Grows with cohort age; tiering split becomes age-aware so old milestones sit in Archive-Instant"
+    },
+    {
+      "item": "HEAVY live growth",
+      "modelA": "infra: 293 GB/mo RAW (binary GB)",
+      "modelB": "pnl: 325 GB/mo",
+      "resolution": "318 GB/mo (293 RAW + 20 renders + 5 design)"
+    },
+    {
+      "item": "HEAVY live at start",
+      "modelA": "infra: 1,536 GB (1.5 TiB)",
+      "modelB": "pnl: 1,500 GB",
+      "resolution": "1,500 (task value); the tie-out uses 1,536 to reproduce the infra headline"
+    },
+    {
+      "item": "Chunk dedup timing",
+      "modelA": "build: not in Phase 2; +2-3 EM, +1 month if T2 forces it",
+      "modelB": "pnl: sensitivity only",
+      "resolution": "Config B-D assume it is in Phase 2; the build cost of that (~$45-65k) is inside the build model's slack, not added to burn"
+    },
+    {
+      "item": "Founder salary",
+      "modelA": "build: excluded ($0 deferred)",
+      "modelB": "pnl: $5k/mo founder growth time in CAC",
+      "resolution": "Both kept: $0 in cash burn, $5k/mo in the CAC numerator"
+    },
+    {
+      "item": "Support / CS headcount",
+      "modelA": "build: none (devrel 0.5 FTE handles early support)",
+      "modelB": "pnl: none",
+      "resolution": "1 support hire per 150 customers ($100k base) added; matters only in BULL"
+    },
+    {
+      "item": "Free tiers",
+      "modelA": "infra: ignored (CloudFront 1 TB, S3 100 GB egress, Cognito 10k MAU)",
+      "modelB": "pnl: ignored",
+      "resolution": "Ignored; would remove ~$5-15/customer-month for the first ~10 customers"
+    }
+  ]
+}
