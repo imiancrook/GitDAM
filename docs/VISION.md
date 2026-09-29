@@ -196,6 +196,7 @@ Added after [STRESS_TEST.md](./STRESS_TEST.md) rated the plan 5/10: the desktop-
 
 ### Phase 1: The commit graph (1–2 months)
 - Add `Ref`, `Commit`, `Tree`, `Blob`, `Lock` models; migrate `Repository → Project`, `LFSObject → Blob`.
+- Add `StorageBackend` and the storage adapter with two implementations from the start: managed (Backblaze B2 default, zero egress) and S3 (for customers' own buckets and residency). Blobs are keyed per backend; there is no cross-tenant dedup. See [STORAGE.md](./STORAGE.md). Building this after data exists costs several times more.
 - `createCommit`, `createRef`, `getTree`, `diffCommits` as AppSync custom mutations/queries backed by Lambda (these need transactional ref updates, which the auto-generated CRUD can't do).
 - Every upload becomes a commit. History and restore in the UI.
 - **Locks in the UI, first.** Research says "last save wins" is the loss people fear most and every lock implementation they've used is buggy; check-out is the headline collaboration feature, explorations are second.
@@ -218,7 +219,8 @@ Moved forward from Phase 4. The research is unambiguous that a DAM outside the t
 - Releases with zip bundles and public share links (signed, expiring); closing a milestone produces the release and drafts its notes from the issues. Each release gets an **approval record** export (PDF: what was approved, by whom, when, with thumbnails and the review thread), because "implied approval" is the top source of agency disputes.
 - Teams, roles (including a guest role for clients), activity feed.
 - **Member offboarding** (from WORKFLOWS 5.3): removing a member shows and reassigns their check-outs, issues and open reviews, revokes their tokens, keeps their history.
-- **Usage view** (WORKFLOWS 5.5): stored GB per project, egress against the included allowance, next invoice, overage shown before it happens.
+- **Usage view** (WORKFLOWS 5.5): stored GB per project split into live, auto-snapshot window and milestones, with the retention dial; egress against the included allowance; next invoice; overage shown before it happens.
+- **Bring-your-own-bucket wizard** (STORAGE.md §4.2): connect S3 via a cross-account role or R2/B2 via a scoped key, canary checks, a cost estimate at the customer's provider, and managed↔BYO migration.
 - **Cross-org release delivery** (WORKFLOWS 10.1): a project can deliver its releases into a project in another org as an import snapshot with the approval record attached. This is how agency work lands in a brand's library and how brands meet GitDAM before they buy it.
 - Notifications (email, Slack) for assignments, mentions, state changes and review requests.
 - OpenSearch-backed search (moved forward from Phase 5; search that degrades past ~100k assets is a named DAM failure mode).
@@ -241,9 +243,10 @@ Moved forward from Phase 4. The research is unambiguous that a DAM outside the t
 
 Added after research: per-seat pricing, guest fees, per-feature add-ons, unforecastable usage credits and surprise bills are the most repeated complaints across DAMs, review tools and version-control products, and Unity moved Unity VCS to free seats plus per-GB in 2026. GitDAM's pricing should be the inverse of the complaints:
 
-- **Storage-based, not seat-based.** A flat fee per organization that scales with stored GB. Adding a contractor for three months costs nothing.
+- **A platform fee plus a separate, visible storage line.** The platform fee per organization pays for the software. Storage is its own line and the customer chooses it: **managed** (GitDAM-hosted on a zero-egress provider, an included allowance per tier, overage per GB, bandwidth included) or **your own bucket** (S3, R2, B2, Wasabi, GCS; the customer pays their provider and GitDAM keeps only metadata and previews). Seats are not the unit; adding a contractor for three months costs nothing up to a generous included-editor count. See [STORAGE.md](./STORAGE.md).
+- **Version history is priced honestly.** Managed storage bills retained GB, and the usage view shows live files, the auto-snapshot window and milestones separately, with the retention dial next to the number. Customers control what history costs instead of GitDAM hiding it in the price.
 - **Guests, reviewers and clients are free and unlimited.** The people who receive releases and leave feedback never count.
-- **Bandwidth included.** A generous egress allowance per stored GB; overage priced at cost and visible in the app before it happens, never a surprise on the invoice.
+- **Bandwidth included** on managed storage; on your own bucket, egress is your provider's business and the connection wizard estimates it before you commit. Overage of any kind is shown in the app before it happens, never first on the invoice.
 - **No feature paywalls.** Explorations, reviews, releases, Git access and the desktop client are in every plan. Tiers differ by storage, retention and support.
 - **Published, and stable.** Prices on the website; changes announced a year ahead with grandfathering.
 
