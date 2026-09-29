@@ -4,45 +4,64 @@ Decision record and design for how GitDAM stores bytes and charges for them. Sup
 
 ## 1. The decision
 
-Every organization chooses, per project, one of two places for its blobs:
+Storage is a completely separate purchase from the service. Two lines on every invoice:
 
-- **Managed storage.** GitDAM-hosted, included allowance per tier, overage per GB, bandwidth included. The default; the only option that requires nothing of the customer.
-- **Your own storage (BYO).** The customer's bucket on S3, Cloudflare R2, Backblaze B2, Wasabi or Google Cloud Storage. GitDAM keeps the metadata, history, locks, issues, releases and previews; the customer's bucket keeps the bytes and the customer pays their provider directly.
+1. **The service.** One price per tier for the software: history, locks, explorations, releases, issues, the desktop client, unlimited guests. It includes **no storage at all**.
+2. **Storage.** The customer picks one of:
+   - **A managed storage size.** GitDAM-hosted, sold in sizes (250 GB, 1 TB, 2 TB, 5 TB, 10 TB, custom), bandwidth included, change size any time.
+   - **Their own bucket.** S3, Cloudflare R2, Backblaze B2, Wasabi or Google Cloud Storage. Storage line is $0; the customer pays their provider. GitDAM keeps the metadata, history, locks, issues, releases and previews; the bucket keeps the bytes.
 
-The **platform fee** is the same either way and pays for the software. Storage is a separate, visible line: either "managed, N TB included" or "your bucket, $0". This separation is what makes both the margin and the bill predictable.
+Nothing about the service depends on which storage is chosen, and the customer can switch storage without touching the service. The two are separate products that happen to appear on one bill.
 
-Why both: managed is how a 12-person agency starts in thirty minutes; BYO is how a 40-person studio, a brand's IT department, or a regulated customer says yes. BYO is also the strongest possible answer to lock-in: the bytes were never ours.
+Why: the service price stops carrying storage risk, so it can be published and stable; the storage line is transparent and the customer sizes it; and "connect your own" is the strongest answer to lock-in, because the bytes were never ours. Managed sizes are how a 12-person agency starts in thirty minutes; a connected bucket is how a studio, a brand's IT department or a regulated customer says yes.
 
 ## 2. Pricing structure
 
-Platform fee per org per month, by tier, plus a storage choice. Prices are proposals consistent with FINAL_REVIEW's tiers and unit costs; the T1 interviews set the final numbers.
+Prices are proposals consistent with FINAL_REVIEW's unit costs; the T1 interviews set the final numbers.
+
+**Service** (per organization per month):
 
 | | Solo | Studio | Plus |
 |---|---|---|---|
-| Platform fee | $19 | $199 | $599 |
+| Service fee | $15 | $149 | $499 |
 | Who | Lena | Rachel's agency | 30–60 person studios, brands |
-| Included with the platform fee | history, locks, explorations, releases, issues, desktop client, unlimited guests, 30-day auto-snapshot retention, milestones forever | same | same + SSO/SCIM, audit export, customer-managed keys, priority support, MSA |
-| **Managed storage** included | 250 GB | 1 TB | 4 TB |
-| Managed overage | $0.03/GB-month | $25 per additional TB-month (or $0.025/GB) | $20 per additional TB-month |
-| Bandwidth | included | included | included |
-| **Your own storage** | not offered (support cost exceeds the fee) | offered: platform fee only | offered: platform fee only |
+| Includes | history, locks, explorations, releases, issues, desktop client, unlimited guests, 30-day auto-snapshot retention, milestones forever | same | same + SSO/SCIM, audit export, customer-managed keys, priority support, MSA |
 | Editors included | 1 | 20, then $10/editor | 60, then $8/editor |
+| Storage included | **none** | **none** | **none** |
 
-What the customer is billed for under managed storage is **retained GB**: live files plus version history inside the retention window plus milestones. The usage view (WORKFLOWS 5.5) shows the split ("1.2 TB live, 0.6 TB of the last 30 days' saves, 0.3 TB of milestones") and the retention dial is the customer's: shorten the window to shrink the bill, lengthen it and pay for it. This is the honest version of "separate the storage costs": the customer sees what history costs and controls it, rather than GitDAM guessing and hiding it in the price.
+**Storage** (per organization per month, chosen separately, any tier):
 
-The editor guard stays, because residual COGS (previews, metadata, the retention window) scales with editors × saves, not with GB.
+| Managed size | Price | Effective per TB | Notes |
+|---|---|---|---|
+| 250 GB | $6 | $24 | the Solo default |
+| 1 TB | $20 | $20 | |
+| 2 TB | $36 | $18 | the Studio default |
+| 5 TB | $80 | $16 | |
+| 10 TB | $150 | $15 | |
+| Custom, 20 TB+ | quoted | ~$12–14 | |
+| **Your own bucket** | **$0** | | any tier; self-serve on Solo, supported on Studio and Plus |
+
+Bandwidth is included on managed sizes. Sizes can be changed at any time; going over a size for more than 7 days prompts a resize rather than billing overage silently.
+
+What a managed size holds is **retained GB**: live files plus version history inside the retention window plus milestones. The usage view (WORKFLOWS 5.5) shows the split ("1.2 TB live, 0.6 TB of the last 30 days' saves, 0.3 TB of milestones") with the retention dial next to it, so the customer decides how much history to keep and what size to buy. On a connected bucket the same view shows the same split against their provider's bill.
+
+The editor guard stays in the service tier, because the service's residual cost (previews, metadata, processing) scales with editors × saves, not with GB.
+
+Illustration for the reference agency: Studio service $149 + 2 TB managed $36 = **$185/month**, or Studio service $149 + their own B2 bucket ≈ $149 + roughly $15 paid to Backblaze. Today's stack for the same agency is about $398 (FINAL_REVIEW §5).
 
 ## 3. Economics under each option
 
 Managed storage runs on a zero-egress provider (R2 or B2; §5), not S3, because egress was 68% of the as-designed cost. Hand-derived from FINAL_REVIEW §4's LIGHT agency components (200 GB live, 3,818 GB retained as designed, 2,212 GB/month egress):
 
-| Studio, LIGHT workload | COGS/month | Revenue/month | Gross margin |
+| Studio, LIGHT workload | COGS/month | Revenue/month (service + storage) | Gross margin |
 |---|---|---|---|
-| Managed on S3, as designed (FINAL_REVIEW config A) | $286 | $199 + 2.8 TB overage ($70) = $269 | negative |
-| Managed on B2, as designed | ~$35 | $269 | ~87% |
-| Managed on B2, config D (chunk dedup, pull-on-demand) | ~$22 | $199 + 0.65 TB overage ($16) = $215 | ~90% |
-| Managed on R2, config D | ~$35 | $215 | ~84% |
-| **BYO**, any provider | ~$8–15 (previews compute and storage, metadata, requests) | $199 | ~93–96% |
+| Managed on S3, as designed (FINAL_REVIEW config A; 3.8 TB retained → 5 TB size) | $286 | $149 + $80 = $229 | negative |
+| Managed on B2, as designed (5 TB size) | ~$35 | $229 | ~85% |
+| Managed on B2, config D (chunk dedup, pull-on-demand; 1.65 TB retained → 2 TB size) | ~$22 | $149 + $36 = $185 | ~88% |
+| Managed on R2, config D | ~$35 | $185 | ~81% |
+| **Own bucket**, any provider | ~$8–15 (previews compute and storage, metadata, requests) | $149 | ~90–95% |
+
+The storage line on its own is a thin-margin product on purpose (B2 costs GitDAM ~$6/TB and sells at $15–24/TB; the gap pays for bandwidth, previews of what's stored, and operations). The service line is where the margin is, and it is the same whichever storage the customer picks.
 
 Two things follow. First, moving managed storage off S3 makes the design as written profitable without the three configuration-D changes; those become margin improvements, and chunk dedup (2–3 EM) leaves the Phase 2 critical path. Second, BYO customers are the most profitable customers and the ones with the largest files, which is the opposite of the S3-only model where video customers were the least profitable.
 
@@ -119,8 +138,8 @@ Recommendation: **B2 as the default managed store** (US and EU), **R2 where a cu
 
 | Persona | Default | Why |
 |---|---|---|
-| Maya, Rachel (Studio) | Managed | Thirty-minute onboarding; the storage line is one number |
-| Lena (Solo) | Managed only | BYO support cost would exceed $19 |
+| Maya, Rachel (Studio) | Service + a managed size (2 TB) | Thirty-minute onboarding; the storage line is one number they chose |
+| Lena (Solo) | Service + 250 GB managed; own bucket allowed but self-serve only | Support on a connected bucket would exceed the $15 fee, so no wizard hand-holding on Solo |
 | Priya's post house | Managed; BYO if they already own a Wasabi/B2 bucket for footage | Many post houses already do |
 | Sam's studio | BYO on their existing S3, or managed | They have an AWS account and a build pipeline |
 | Marcus, Devon (Plus) | BYO on the company's S3 with CMK, or managed on S3 in their region | Ownership, residency, audit; SOC 2 questionnaire answers get shorter |
@@ -132,7 +151,8 @@ Recommendation: **B2 as the default managed store** (US and EU), **R2 where a cu
 - **Phase 3:** the BYO wizard, the retention dial and the storage split in the usage view ship together; they are the same feature seen from three sides.
 - **Phase 5:** BYO previews-in-bucket, GCS and Wasabi adapters, cross-backend delivery copies.
 - **ASSUMPTIONS:** T2's pass bar becomes "managed on B2/R2 ≥ 80% at Studio; BYO ≥ 90%"; T12 (egress) is retired for managed storage and becomes a BYO-wizard disclosure.
-- **Pricing principles (VISION):** "storage-based" becomes "platform fee plus a separate, visible storage line, managed or your own"; "bandwidth included" holds for managed storage; for BYO it is the customer's provider's business.
+- **Pricing principles (VISION):** the service includes no storage; storage is a separate purchase, a managed size or a connected bucket; "bandwidth included" holds for managed sizes; on a connected bucket it is the customer's provider's business.
+- **P&L model:** revenue becomes two lines (service by tier; storage by size or $0), and tier mix gains a managed/own-bucket split. Storage revenue is low-margin and should be reported separately so service margin is not diluted in the headline.
 
 ## 8. Open items
 
